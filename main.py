@@ -2,6 +2,12 @@ import torch
 import torch.nn as nn
 import numpy as np
 import SimpleITK as sitk
+BATCH_SIZE = 32
+LR = 0.01                   # learning rate
+EPSILON = 0.9               # greedy policy
+GAMMA = 0.9                 # reward discount
+TARGET_REPLACE_ITER = 100   # target update frequency
+MEMORY_CAPACITY = 2000
 
 class Env():
     def __init__(self,fixed_path,moving_path):
@@ -60,9 +66,3 @@ class Agent():
             self.target.load_state_dict(self.dqn.state_dict())
         self.learn_step_counter += 1
 
-BATCH_SIZE = 32
-LR = 0.01                   # learning rate
-EPSILON = 0.9               # greedy policy
-GAMMA = 0.9                 # reward discount
-TARGET_REPLACE_ITER = 100   # target update frequency
-MEMORY_CAPACITY = 2000
