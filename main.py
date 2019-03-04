@@ -3,6 +3,7 @@ import torch.nn as nn
 import numpy as np
 import glob
 import random
+from convnet import Convnet
 import SimpleITK as sitk
 BATCH_SIZE = 32
 EXP_STEPS=1000
@@ -20,6 +21,8 @@ class Env():
     def __init__(self,fixed_path,moving_path):
         dummy=1
         self.action_define=range(6)
+        self.fixed_path=fixed_path
+        self.moving_path = moving_path
 
     def takeAction(self,moving_img,action):#TODO
         return moving_img
@@ -27,13 +30,7 @@ class Env():
         fixed, moving=0,0
         return  fixed,moving
 
-class Convnet(nn.Module):#TODO
-    def __init__(self):
-        super(Convnet, self).__init__()
-        dummy=1
-    def forward(self,crop_fixed,crop_moving):
-        Q_pre=1
-        return Q_pre
+
 
 class Metricnet():#TODO
     def __init__(self):
@@ -45,15 +42,15 @@ class Metricnet():#TODO
         return r,done
 
 class Agent():
-    def __init__(self,memory_size=1000,crop_size=352,z_size=32,lr=LR):
+    def __init__(self,memory_size=1000,crop_size=192,z_size=32,lr=LR):
         self.dqn,self.target=Convnet().cuda(),Convnet().cuda()
         self.crop_size=crop_size
         self.z_size=z_size
         self.memory_size=memory_size
-        self.mb_pool=np.zeros(memory_size,crop_size,crop_size,z_size)
-        self.maft_pool = np.zeros(memory_size, crop_size, crop_size, z_size)
-        self.reward_pool = np.zeros(memory_size, 1)
-        self.action_pool = np.zeros(memory_size, 1)
+        self.mb_pool=np.zeros([memory_size,crop_size,crop_size,z_size])
+        self.maft_pool = np.zeros([memory_size, crop_size, crop_size, z_size])
+        self.reward_pool = np.zeros([memory_size, 1])
+        self.action_pool = np.zeros([memory_size, 1])
         self.count=0
         self.learn_step_counter = 0
         self.optimizer = torch.optim.Adam(self.dqn.parameters(), lr=lr)
@@ -122,7 +119,7 @@ class Trainer():
             self.agent.setFixed(fixed)
             a = self.agent.chooseAction(moving)# a is a numpy
             # take action
-            moving_new = self.env.takeAction(moving,a)
+            moving_new = self.env.takeAction(moving,a)# moving_new is a numpy
             r,done=self.r_metric.forward(fixed,moving_new)
             self.agent.saveState(moving, a, r, moving_new)
             ep_r += r
